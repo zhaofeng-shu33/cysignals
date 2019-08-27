@@ -15,6 +15,7 @@ environment:
       PYTHON_VERSION: "2.7"
       ARCH: x86_64
       MAKE: make
+      autoconf: autoconf
 
 before_build:
   - echo "Building Cysignals for %OS%"
@@ -33,6 +34,7 @@ before_build:
   - python%PYTHON_VERSION% -m cython --version
 
 build_script:
+  - '%autoconf% --version'
   - '%MAKE% install'
 
 test_script:
