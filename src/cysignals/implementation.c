@@ -26,7 +26,20 @@ Interrupt and signal handling for Cython
 #if __USE_FORTIFY_LEVEL
 #error "cysignals must be compiled without _FORTIFY_SOURCE"
 #endif
-
+#if defined(_MSC_VER)
+#define SIGHUP 1
+#define SIGQUIT 2
+#define SIGBUS 10
+#define SIGALRM 15
+typedef void (*_sig_func_ptr)(int);
+typedef unsigned long sigset_t;
+struct sigaction
+{
+    _sig_func_ptr sa_handler;
+    sigset_t sa_mask;
+    int sa_flags;
+};
+#endif
 
 #include "config.h"
 #include <stdio.h>
