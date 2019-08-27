@@ -1,7 +1,7 @@
 /* Cygwin-specific implementation details */
 
-#if defined(__CYGWIN__) && defined(__x86_64__)
-#include <w32api/errhandlingapi.h>
+#if defined(WIN32) && defined(__x86_64__)
+#include <errhandlingapi.h>
 LONG WINAPI win32_altstack_handler(EXCEPTION_POINTERS *exc)
 {
     int sig = 0;

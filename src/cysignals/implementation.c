@@ -35,6 +35,7 @@ Interrupt and signal handling for Cython
 #include <limits.h>
 #include <errno.h>
 #include <pthread.h>
+#include <setjmp.h>
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
