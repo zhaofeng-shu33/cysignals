@@ -27,8 +27,11 @@ Interrupt and signal handling for Cython
 #error "cysignals must be compiled without _FORTIFY_SOURCE"
 #endif
 
-
+#if defined(_MSC_VER)
+#include "config_msvc.h"
+#else
 #include "config.h"
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

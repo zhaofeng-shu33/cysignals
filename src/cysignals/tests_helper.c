@@ -20,7 +20,11 @@
  *
  ****************************************************************************/
 
+#if defined(_MSC_VER)
+#include "config_msvc.h"
+#else
 #include "config.h"
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
