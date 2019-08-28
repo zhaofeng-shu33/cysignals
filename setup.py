@@ -33,6 +33,10 @@ macros = [
 ]
 
 depends = glob(opj("src", "cysignals", "*.h"))
+extra_compile_args_list = []
+extra_link_args_list = []
+extra_include_path = [opj("src"),
+                          opj("src", "cysignals")]
 
 if sys.platform == 'cygwin':
     # On Cygwin FD_SETSIZE defaults to a rather low 64; we set it higher
@@ -41,17 +45,24 @@ if sys.platform == 'cygwin':
     macros.append(('FD_SETSIZE', 512))
     depends.append(opj("src", "cysignals", "implementation_cygwin.c"))
 
+if sys.platform == 'win32':
+    if(os.environ.get('VCPKG_ROOT')):
+        root_dir = os.environ['VCPKG_ROOT']
+        triplet = os.environ.get('VCPKG_DEFAULT_TRIPLET', 'x64-windows')
+        include_dir = os.path.join(root_dir, 'installed', triplet, 'include')
+        if(os.path.exists(include_dir)):
+            extra_include_path.append(include_dir)
+            
 # Disable sanity checking in GNU libc. This is required because of
 # false positives in the longjmp() check.
 undef_macros = ["_FORTIFY_SOURCE"]
 
-kwds = dict(include_dirs=[opj("src"),
-                          opj("src", "cysignals")],
+kwds = dict(include_dirs=extra_include_path,
             depends=depends,
             define_macros=macros,
             undef_macros=undef_macros,
-            extra_compile_args=["-pthread"],
-            extra_link_args=["-pthread"],)
+            extra_compile_args=extra_compile_args_list,
+            extra_link_args=extra_link_args_list,)
 
 extensions = [
     Extension("cysignals.signals", ["src/cysignals/signals.pyx"], **kwds),
