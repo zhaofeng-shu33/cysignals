@@ -223,7 +223,11 @@ static void cysigs_interrupt_handler(int sig)
             do_raise_exception(sig);
 
             /* Jump back to sig_on() (the first one if there is a stack) */
+#if defined(_MSC_VER)
+            longjmp(trampoline, sig);
+#else            
             siglongjmp(trampoline, sig);
+#endif        
         }
     }
     else
@@ -270,7 +274,11 @@ static void cysigs_signal_handler(int sig)
         do_raise_exception(sig);
 
         /* Jump back to sig_on() (the first one if there is a stack) */
-        siglongjmp(trampoline, sig);
+#if defined(_MSC_VER)
+            longjmp(trampoline, sig);
+#else            
+            siglongjmp(trampoline, sig);
+#endif 
     }
     else
     {
@@ -323,8 +331,11 @@ static void* _sig_on_trampoline(void* dummy)
          * stack_guard to prevent GCC from optimizing away the
          * stack_guard variable. */
         pthread_exit(stack_guard);
-
+#if defined(_MSC_VER)
+    sig = setjmp(trampoline);
+#else    
     sig = sigsetjmp(trampoline, 1);
+#endif
     reset_CPU();
     cylongjmp(cysigs.env, sig);
 }
@@ -353,8 +364,15 @@ static void setup_trampoline(void)
 
     ret = pthread_attr_init(&attr);
     if (ret) {errno = ret; perror("cysignals pthread_attr_init"); exit(1);}
+#if defined(_MSC_VER)    
+    ret = pthread_attr_setstackaddr(&attr, trampolinestack);
+    if (ret) {errno = ret; perror("cysignals pthread_attr_setstackaddr"); exit(1);}
+    ret = pthread_attr_setstacksize(&attr, trampolinestacksize);
+    if (ret) {errno = ret; perror("cysignals pthread_attr_setstacksize"); exit(1);}
+#else
     ret = pthread_attr_setstack(&attr, trampolinestack, trampolinestacksize);
     if (ret) {errno = ret; perror("cysignals pthread_attr_setstack"); exit(1);}
+#endif    
     ret = pthread_create(&child, &attr, _sig_on_trampoline, NULL);
     if (ret) {errno = ret; perror("cysignals pthread_create"); exit(1);}
     pthread_attr_destroy(&attr);
@@ -464,9 +482,10 @@ static void setup_alt_stack(void)
 
 static void setup_cysignals_handlers(void)
 {
+#if !defined(_MSC_VER)
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
-
+#endif
     /* Reset the cysigs structure */
     memset(&cysigs, 0, sizeof(cysigs));
 
@@ -489,6 +508,17 @@ static void setup_cysignals_handlers(void)
 
     /* Install signal handlers */
     /* Handlers for interrupt-like signals */
+#if defined(_MSC_VER)
+    if(signal(SIGINT, cysigs_interrupt_handler) == SIG_ERR){
+        perror("set cysignals interrupt handler failed"); exit(1);
+    }
+    if(signal(SIGABRT, cysigs_signal_handler) == SIG_ERR){
+        perror("set cysignals interrupt handler failed"); exit(1);
+    }
+    if (signal(SIGILL, cysigs_signal_handler) == SIG_ERR) {perror("cysignals sigaction"); exit(1);}   
+    if (signal(SIGFPE, cysigs_signal_handler) == SIG_ERR) {perror("cysignals sigaction"); exit(1);}  
+    if (signal(SIGSEGV, cysigs_signal_handler) == SIG_ERR) {perror("cysignals sigaction"); exit(1);}    
+#else    
     sa.sa_handler = cysigs_interrupt_handler;
     sa.sa_flags = 0;
     if (sigaction(SIGHUP, &sa, NULL)) {perror("cysignals sigaction"); exit(1);}
@@ -506,6 +536,7 @@ static void setup_cysignals_handlers(void)
     if (sigaction(SIGFPE, &sa, NULL)) {perror("cysignals sigaction"); exit(1);}
     if (sigaction(SIGBUS, &sa, NULL)) {perror("cysignals sigaction"); exit(1);}
     if (sigaction(SIGSEGV, &sa, NULL)) {perror("cysignals sigaction"); exit(1);}
+#endif    
 }
 
 

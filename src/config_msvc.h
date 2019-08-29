@@ -27,7 +27,7 @@
 /* #undef HAVE_EXECINFO_H */
 
 /* Define to 1 if you have the `fork' function. */
-#define HAVE_FORK 1
+#define HAVE_FORK 0
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -42,7 +42,7 @@
 /* #undef HAVE_PARI */
 
 /* Define to 1 if you have the `sigaltstack' function. */
-#define HAVE_SIGALTSTACK 1
+#define HAVE_SIGALTSTACK 0
 
 /* Define to 1 if you have the `sigprocmask' function. */
 #define HAVE_SIGPROCMASK 0
@@ -104,7 +104,7 @@
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
-typedef long sigjmp_buf[34];
+typedef _JBTYPE sigjmp_buf[34];
 #define SIGHUP 1
 #define SIGQUIT 2
 #define SIGBUS 10
